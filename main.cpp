@@ -341,6 +341,8 @@ void display(void)
 
 int main(int argc, char* argv[])
 {
+    //测试提交github...
+    std::cout << "程序启动..." <<std::endl;
     if( !glfwInit() )
     {
         fprintf( stderr, "Failed to initialize GLFW\n" );
