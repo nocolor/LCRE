@@ -7,6 +7,7 @@
 #include "qyt/GLSLProgram.hpp"
 #include "qyt/batch.hpp"
 #include "qyt/FileUtils.hpp"
+#include "qyt/drawUtils.hpp"
 
 GLFWwindow* window;
 
@@ -70,6 +71,8 @@ GLuint loadBMP_custom(const char * imagepath)
     return textureID;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+
 qyt::Batch triangle1;
 qyt::Batch grid;
 
@@ -82,6 +85,12 @@ GLuint textureID;
 
 qyt::mat4 MVP;
 qyt::mat4 trans;
+
+GLuint VAO;
+GLuint VBO;
+GLuint EBO;
+GLuint textureID_wood;
+GLuint textureLocation_wood;
 
 qyt::mat4 _M;
 
@@ -196,6 +205,18 @@ void update_mvp()
 
 void init(void)
 {
+    _program = qyt::GLSLProgram::createWithFile("textureShader.vert",
+                                              "textureShader.frag");
+
+    auto fileutil = qyt::FileUtils::getInstance();
+    texture = loadBMP_custom(fileutil->fullPathForFilename("texture.bmp").c_str());
+    textureID  = _program->getUniformLocation("__qyt_sampler0");
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(textureID, 0);
+
+    _posProgram = qyt::GLSLProgram::createWithFile("positionShader.vert",
+                                                   "positionShader.frag");
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
@@ -279,6 +300,75 @@ void init(void)
     textRect.vertex3f(-5.f, 5.f, 0.f);
 
     textRect.end();
+
+    //----------------------------------------
+
+    static GLfloat vertices[] = {
+            //top lb
+            -1.f,   1.f,    -1.f,           //pos
+            1.f,    1.f,    1.f,    1.f,    //color
+            0.f,    0.f,                    //uv
+            0.f,    1.f,    0.f,            //normal
+
+            //top rb
+            1.f,    1.f,    -1.f,           //pos
+            1.f,    1.f,    1.f,    1.f,    //color
+            1.f,    0.f,                    //uv
+            0.f,    1.f,    0.f,            //normal
+
+            //top ru
+            1.f,    1.f,    1.f,            //pos
+            1.f,    1.f,    1.f,    1.f,    //color
+            1.f,    1.f,                    //uv
+            0.f,    1.f,    0.f,            //normal
+
+            //top lu
+            -1.f,   1.f,    1.f,            //pos
+            1.f,    1.f,    1.f,    1.f,    //color
+            0.f,    1.f,                    //uv
+            0.f,    1.f,    0.f,            //normal
+
+    };
+
+    static GLuint idx[] = {
+            //top
+            0,  1,  3,
+            1,  2,  3
+    };
+
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+
+    glGenBuffers(1, &EBO);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid * )0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid * )(3* sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid * )(7* sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid * )(9* sizeof(GLfloat)));
+    glEnableVertexAttribArray(6);
+
+    textureID_wood = loadBMP_custom(fileutil->fullPathForFilename("woodTexture.bmp").c_str());
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureID_wood);
+    glUniform1i(_program->getUniformLocation("__qyt_sampler0"), 0);
+
     //----------------------------------------
 
     camera.eye = qyt::vec4(10.f, 10.f, 10.f, 1.f).xyz;
@@ -302,18 +392,7 @@ void init(void)
 
     _M = qyt::translate(qyt::mat4(MVP), qyt::vec3(3.f,1.f,1.f));
 
-    _program = qyt::GLSLProgram::createWithFile("textureShader.vert",
-                                                "textureShader.frag");
 
-    auto fileutil = qyt::FileUtils::getInstance();
-    texture = loadBMP_custom(fileutil->fullPathForFilename("texture.bmp").c_str());
-    textureID  = _program->getUniformLocation("__qyt_sampler0");
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glUniform1i(textureID, 0);
-
-    _posProgram = qyt::GLSLProgram::createWithFile("positionShader.vert",
-                                                   "positionShader.frag");
 }
 
 void display(void)
@@ -327,12 +406,25 @@ void display(void)
     _posProgram->uniformMatrix4fv(_posProgram->getUniformLocation("__qyt_mvpMatrix"), &MVP[0][0], 1);
     grid.draw();
 
+
+
     _posProgram->uniformMatrix4fv(_posProgram->getUniformLocation("__qyt_mvpMatrix"), &_M[0][0], 1);
     triangle1.draw();
 
     _program->use();
     _program->uniformMatrix4fv(_program->getUniformLocation("__qyt_mvpMatrix"), &MVP[0][0], 1);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(textureID, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     textRect.draw();
+
+    glBindVertexArray(VAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureID_wood);
+    glUniform1i(textureID_wood, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 
     // 3. 请求将图像绘制到窗口
     glfwSwapBuffers(window);
