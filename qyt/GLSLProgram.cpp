@@ -235,7 +235,7 @@ namespace qyt
         glGetProgramiv(_program, GL_ACTIVE_ATTRIBUTES, &activeAttributes);
         if(activeAttributes > 0)
         {
-            __vertex_attrib attribute;
+            GLVertexAttribute attribute;
             
             glGetProgramiv(_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &length);
             if(length > 0)
@@ -281,7 +281,7 @@ namespace qyt
         return nullptr;
     }
     
-    __vertex_attrib* GLSLProgram::getVertexAttrib(const std::string &__name)
+    GLVertexAttribute * GLSLProgram::getVertexAttrib(const std::string &__name)
     {
         const auto itr = _vertexAttribs.find(__name);
         if( itr != _vertexAttribs.end())

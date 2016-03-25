@@ -413,18 +413,20 @@ void display(void)
 
     _program->use();
     _program->uniformMatrix4fv(_program->getUniformLocation("__qyt_mvpMatrix"), &MVP[0][0], 1);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glUniform1i(textureID, 0);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    textRect.draw();
-
     glBindVertexArray(VAO);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureID_wood);
     glUniform1i(textureID_wood, 0);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(textureID, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    textRect.draw();
+
 
     // 3. 请求将图像绘制到窗口
     glfwSwapBuffers(window);

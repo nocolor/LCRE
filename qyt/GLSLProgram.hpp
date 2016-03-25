@@ -16,7 +16,7 @@
 
 namespace qyt
 {
-    struct __vertex_attrib
+    struct GLVertexAttribute
     {
         GLuint      _index;
         GLint       _size;
@@ -88,7 +88,7 @@ namespace qyt
         bool initWithSource(const char* __vShaderSrc, const char* __fShaderSrc);
         
         __uniform* getUniform(const std::string& __name);
-        __vertex_attrib* getVertexAttrib(const std::string& __name);
+        GLVertexAttribute * getVertexAttrib(const std::string& __name);
         
         GLint getAttribLocation(const std::string &attributeName) const;
         GLint getUniformLocation(const std::string &attributeName) const;
@@ -119,7 +119,7 @@ namespace qyt
         GLint       _builtInUniforms[_uniform_max];
         
         std::unordered_map<std::string, __uniform> _userUniforms;
-        std::unordered_map<std::string, __vertex_attrib> _vertexAttribs;
+        std::unordered_map<std::string, GLVertexAttribute> _vertexAttribs;
         
         void updateUniforms();
         bool link();

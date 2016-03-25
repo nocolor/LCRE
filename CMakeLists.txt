@@ -35,7 +35,7 @@ aux_source_directory(${SOURCE_FILE_DIR} CUSTOM_SOURCE_FILES)
 set(SOURCE_FILES
         main.cpp
         ${ROOT_DIR}/GL/glew.c
-        ${CUSTOM_SOURCE_FILES})
+        ${CUSTOM_SOURCE_FILES} qyt/GLRenderCommand.cpp qyt/GLRenderCommand.hpp qyt/GLShader.cpp qyt/GLShader.hpp)
 
 #添加头文件包含目录
 include_directories(${ROOT_DIR})
